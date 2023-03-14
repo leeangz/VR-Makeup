@@ -2,6 +2,10 @@ from scipy import interpolate
 from pylab import *
 from skimage import color
 import cv2
+import os
+
+path=os.getcwd()
+print(path)
 
 Rg, Gg, Bg = (223., 91., 111.)
 intensity = 0.5  # intensity of the blush
@@ -11,8 +15,8 @@ mid is used to construct the points for the blush in
 the left cheek , as only the right cheek's points are
 given as input.
 '''
-im = imread('Input1.jpg')
-points = np.loadtxt('point1.txt')
+im = imread('c:\Python\Python-work\Virtual-Makeup\plush\Input1.jpg')
+points = np.loadtxt('c:\Python\Python-work\Virtual-Makeup\plush\point1.txt')
 
 height, width = im.shape[:2]
 imOrg = im.copy()

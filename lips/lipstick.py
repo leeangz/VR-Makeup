@@ -15,7 +15,7 @@ def inter(lx, ly, k1='quadratic'):
 
 
 # gets the points on the boundary of lips from the file
-file = np.loadtxt('pointpixel.txt')
+file = np.loadtxt('c:\Python\Python-work\Virtual-Makeup\lips\pointpixel.txt')
 points = np.floor(file)
 point_out_x = np.array((points[:len(points) // 2][:, 0]))
 point_out_y = np.array(points[:len(points) // 2][:, 1])
@@ -23,7 +23,7 @@ point_in_x = (points[len(points) // 2:][:, 0])
 point_in_y = points[len(points) // 2:][:, 1]
 
 figure()
-im = imread('Input.jpg')
+im = imread('c:\Python\Python-work\Virtual-Makeup\lips\Input.jpg')
 
 # Code for the curves bounding the lips
 o_u_l = inter(point_out_x[:up_left_end], point_out_y[:up_left_end])
@@ -73,4 +73,4 @@ im[x, y] = color.lab2rgb(val.reshape(len(x), 1, 3)).reshape(len(x), 3) * 255
 gca().set_aspect('equal', adjustable='box')
 imshow(im)
 show()
-imsave('output.jpg', im)
+imsave('c:\Python\Python-work\Virtual-Makeup\lips\output.jpg', im)
