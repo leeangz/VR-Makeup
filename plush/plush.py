@@ -83,5 +83,5 @@ smoothen_blush(2 * mid * ones(len(x)) - x, y)
 
 figure()
 plt.imshow(imOrg)
-imsave('output.jpg', imOrg)
+imsave('c:\Python\Python-work\Virtual-Makeup\plush\output.jpg', imOrg)
 show()

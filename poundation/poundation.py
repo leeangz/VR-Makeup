@@ -1,7 +1,7 @@
 from __future__ import division
 import cv2
-from PIL import Image
 import numpy as np,math
+import image
 import scipy as sp
 from numpy.linalg import eig, inv
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
@@ -154,10 +154,10 @@ point_face_y = np.array(pointsface[:][:,1])
 
 file = np.loadtxt('c:\Python\Python-work\Virtual-Makeup\poundation\pointlips.txt')
 points =  np.floor(file)
-point_out_x = np.array((points[:int(len(points)/2)][:,0]))
-point_out_y = np.array(points[:int(len(points)/2)][:,1])
-point_in_x = (points[int(len(points)/2):][:,0])
-point_in_y = points[int(len(points)/2):][:,1]
+point_out_x = np.array((points[:len(points)/2][:,0]))
+point_out_y = np.array(points[:len(points)/2][:,1])
+point_in_x = (points[len(points)/2:][:,0])
+point_in_y = points[len(points)/2:][:,1]
 
 fileeye = np.loadtxt('c:\Python\Python-work\Virtual-Makeup\poundation\pointeyes.txt')
 pointseye =  np.floor(fileeye)
@@ -284,5 +284,5 @@ imshow(im)
 # plot(upper_ellipse[0], upper_ellipse[1], 'g-')
 # plot(lower_face[0], lower_face[1], 'g-')
 gca().set_aspect('equal', adjustable='box')
-imsave('out1.jpg',im)
+imsave('c:\Python\Python-work\Virtual-Makeup\poundation\out1.jpg',im)
 show()
