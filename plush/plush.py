@@ -4,9 +4,6 @@ from skimage import color
 import cv2
 import os
 
-path=os.getcwd()
-print(path)
-
 Rg, Gg, Bg = (223., 91., 111.)
 intensity = 0.5  # intensity of the blush
 mid = 378  # Approx x coordinate of center of the face.
