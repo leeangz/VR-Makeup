@@ -69,8 +69,9 @@ val[:, 0] += ll
 val[:, 1] += aa
 val[:, 2] += bb
 
-im[x, y] = color.lab2rgb(val.reshape(len(x), 1, 3)).reshape(len(x), 3) * 255
+im_modified = im.copy()  # create a copy of the original variable
+im_modified[x, y] = color.lab2rgb(val.reshape(len(x), 1, 3)).reshape(len(x), 3) * 255  # modify the new variable
 gca().set_aspect('equal', adjustable='box')
-imshow(im)
+imshow(im_modified)
 show()
-imsave('c:\Python\Python-work\Virtual-Makeup\lips\output.jpg', im)
+imsave('c:\Python\Python-work\Virtual-Makeup\lips\output.jpg', im_modified)
