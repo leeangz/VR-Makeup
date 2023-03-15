@@ -7,7 +7,9 @@ upper_lip = [61, 185, 40, 39, 37, 0, 267, 269, 270, 408, 415, 272, 271, 268, 12,
 lower_lip = [61, 146, 91, 181, 84, 17, 314, 405, 320, 307, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95]
 face_conn = [10, 338, 297, 332, 284, 251, 389, 264, 447, 376, 433, 288, 367, 397, 365, 379, 378, 400, 377, 152,
              148, 176, 149, 150, 136, 172, 138, 213, 147, 234, 127, 162, 21, 54, 103, 67, 109]
-cheeks = [425, 205]
+cheeks = [425, 420, 400, 205, 210, 190]
+left_eye = [36, 37, 38, 39, 40, 41, 42]
+right_eye = [42, 43, 44, 45, 46, 47, 48]
 
 
 def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, show_landmarks: bool = False):
@@ -19,12 +21,16 @@ def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, show_landmarks:
     feature_landmarks = None
     if feature == 'lips':
         feature_landmarks = normalize_landmarks(ret_landmarks, height, width, upper_lip + lower_lip)
-        mask = lip_mask(src, feature_landmarks, [153, 0, 157])
-        output = cv2.addWeighted(src, 1.0, mask, 0.4, 0.0)
+        mask = lip_mask(src, feature_landmarks, [255, 0, 0])
+        output = cv2.addWeighted(src, 1.0, mask, 1.0, 0.0)
     elif feature == 'blush':
         feature_landmarks = normalize_landmarks(ret_landmarks, height, width, cheeks)
         mask = blush_mask(src, feature_landmarks, [153, 0, 157], 50)
-        output = cv2.addWeighted(src, 1.0, mask, 0.3, 0.0)
+        output = cv2.addWeighted(src, 1.0, mask, 1.0, 0.0)
+    elif feature == 'eyeshadow':
+        feature_landmarks = normalize_landmarks(ret_landmarks, height, width, left_eye, right_eye)
+        mask = eyeshadow_mask(src, feature_landmarks, [0, 255, 0], 0.5)
+        output = cv2.addWeighted(src, 1.0, mask, 1.0, 0.0)
     else:  # Defaults to blush for any other thing
         skin_mask = mask_skin(src)
         output = np.where(src * skin_mask >= 1, gamma_correction(src, 1.75), src)
@@ -43,11 +49,14 @@ def apply_feature(src: np.ndarray, feature: str, landmarks: list, normalize: boo
     if normalize:
         landmarks = normalize_landmarks(landmarks, height, width)
     if feature == 'lips':
-        mask = lip_mask(src, landmarks, [153, 0, 157])
-        output = cv2.addWeighted(src, 1.0, mask, 0.4, 0.0)
+        mask = lip_mask(src, landmarks, [255, 0, 0])
+        output = cv2.addWeighted(src, 1.0, mask, 1.0, 0.0)
     elif feature == 'blush':
         mask = blush_mask(src, landmarks, [153, 0, 157], 50)
-        output = cv2.addWeighted(src, 1.0, mask, 0.3, 0.0)
+        output = cv2.addWeighted(src, 1.0, mask, 1.0, 0.0)
+    elif feature == 'eyeshadow':
+        mask = eyeshadow_mask(src, landmarks, [0, 255, 0], 0.5)
+        output = cv2.addWeighted(src, 1.0, mask, 1.0, 0.0)
     else:  # Does not require any landmarks for skin masking -> Foundation
         skin_mask = mask_skin(src)
         output = np.where(src * skin_mask >= 1, gamma_correction(src, 1.75), src)
@@ -83,6 +92,27 @@ def blush_mask(src: np.ndarray, points: np.ndarray, color: list, radius: int):
                                                             10)  # Vignette on the mask
 
     return mask
+
+def eyeshadow_mask(src: np.ndarray, points: np.ndarray, color: list, alpha: float):
+    """
+    Given a src image, points of the eyes and desired color, alpha for blending
+    Returns a colored mask that can be added to the src
+    """
+    mask = np.zeros_like(src)  # Create a mask
+    # Get the left and right points of the eyes
+    left_eye = points[36:42]
+    right_eye = points[42:48]
+    # Create convex hulls around the eyes
+    left_eye_hull = cv2.convexHull(left_eye)
+    right_eye_hull = cv2.convexHull(right_eye)
+    # Fill the convex hulls with the desired color
+    mask = cv2.fillConvexPoly(mask, left_eye_hull, color)
+    mask = cv2.fillConvexPoly(mask, right_eye_hull, color)
+    # Apply a Gaussian blur to the mask to make it look more natural
+    mask = cv2.GaussianBlur(mask, (11, 11), 5)
+    # Blend the mask with the source image using alpha blending
+    output = cv2.addWeighted(src, 1.0 - alpha, mask, alpha, 0.0)
+    return output
 
 
 def mask_skin(src: np.ndarray):
