@@ -6,16 +6,12 @@ from PIL import Image
 from utils import apply_makeup, apply_feature
 import cv2
 import enum
-from typing import List
+import uuid
+import time
+from typing import Tuple
 
 app = Flask(__name__)
 CORS(app)
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    file = request.files['file']
-    # Do something with the file
-    return 'File uploaded successfully'
 
 class FeatureChoice(str, enum.Enum):
     lips = 'lips'
@@ -27,19 +23,26 @@ class FeatureChoice(str, enum.Enum):
 def try_makeup():
     choice = request.form['choice']
     filePath = request.form['filePath']
+    color = request.form['color']
     
-    # Read the image file from the specified file path
+    if color=='red': color=(0,0,255)
+    elif color=='orange': color=(0,127,255)
+    elif color=='purple': color=(255,0,255)
+    elif color=='pink': color=(234,5,250)
+    
+    # 파일경로 불러오기
     image = cv2.imread(filePath, cv2.IMREAD_UNCHANGED)
     
-    # Apply the chosen makeup feature to the image
-    output = apply_makeup(image, False, choice, False)
+    # 메이크업 방식 선택
+    output = apply_makeup(image, False, choice, color, False)
     
-    # Save the output image to a file
-    output_filepath = 'output.jpg'
+    # output 저장 -> 뒤에 시간에 따른 uuid 붙음
+    output_filename = f"output_{int(time.time())}_{uuid.uuid4()}.jpg"
+    output_filepath = f"C:/dev64/thehyundai/color/img/{output_filename}"
     cv2.imwrite(output_filepath, output)
     
-    # Return the output image as a JPEG file
-    return send_file(output_filepath, mimetype='image/jpeg')
+    # jpg로 return
+    return output_filename
 
 if __name__ == '__main__':
     app.run()

@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from landmarks import detect_landmarks, normalize_landmarks, plot_landmarks
 from mediapipe.python.solutions.face_detection import FaceDetection
+from typing import Tuple
 
 upper_lip = [61, 185, 40, 39, 37, 0, 267, 269, 270, 408, 415, 272, 271, 268, 12, 38, 41, 42, 191, 78, 76]
 lower_lip = [61, 146, 91, 181, 84, 17, 314, 405, 320, 307, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95]
@@ -10,7 +11,7 @@ face_conn = [10, 338, 297, 332, 284, 251, 389, 264, 447, 376, 433, 288, 367, 397
 cheeks = [425, 205]
 
 
-def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, show_landmarks: bool = False):
+def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, color: Tuple[int, int, int], show_landmarks: bool = False):
     """
     Takes in a source image and applies effects onto it.
     """
@@ -19,11 +20,11 @@ def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, show_landmarks:
     feature_landmarks = None
     if feature == 'lips':
         feature_landmarks = normalize_landmarks(ret_landmarks, height, width, upper_lip + lower_lip)
-        mask = lip_mask(src, feature_landmarks, [0, 0, 255])
+        mask = lip_mask(src, feature_landmarks, color)
         output = cv2.addWeighted(src, 1.0, mask, 1, 0.0)
     elif feature == 'blush':
         feature_landmarks = normalize_landmarks(ret_landmarks, height, width, cheeks)
-        mask = blush_mask(src, feature_landmarks, [153, 0, 157], 50)
+        mask = blush_mask(src, feature_landmarks, color, 50)
         output = cv2.addWeighted(src, 1.0, mask, 0.3, 0.0)
     else:  # Defaults to blush for any other thing
         skin_mask = mask_skin(src)
@@ -33,7 +34,7 @@ def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, show_landmarks:
     return output
 
 
-def apply_feature(src: np.ndarray, feature: str, landmarks: list, normalize: bool = False,
+def apply_feature(src: np.ndarray, feature: str, landmarks: list, color: Tuple[int, int, int], normalize: bool = False,
                   show_landmarks: bool = False):
     """
     Performs similar to `apply_makeup` but needs the landmarks explicitly
@@ -43,10 +44,10 @@ def apply_feature(src: np.ndarray, feature: str, landmarks: list, normalize: boo
     if normalize:
         landmarks = normalize_landmarks(landmarks, height, width)
     if feature == 'lips':
-        mask = lip_mask(src, landmarks, [0, 0, 255])
+        mask = lip_mask(src, landmarks, color)
         output = cv2.addWeighted(src, 1.0, mask, 0.4, 0.0)
     elif feature == 'blush':
-        mask = blush_mask(src, landmarks, [153, 0, 157], 50)
+        mask = blush_mask(src, landmarks, color, 50)
         output = cv2.addWeighted(src, 1.0, mask, 0.3, 0.0)
     else:  # Does not require any landmarks for skin masking -> Foundation
         skin_mask = mask_skin(src)
@@ -56,7 +57,7 @@ def apply_feature(src: np.ndarray, feature: str, landmarks: list, normalize: boo
     return output
 
 
-def lip_mask(src: np.ndarray, points: np.ndarray, color: list):
+def lip_mask(src: np.ndarray, points: np.ndarray, color: Tuple[int, int, int]):
     """
     Given a src image, points of lips and a desired color
     Returns a colored mask that can be added to the src
@@ -69,7 +70,7 @@ def lip_mask(src: np.ndarray, points: np.ndarray, color: list):
     return mask
 
 
-def blush_mask(src: np.ndarray, points: np.ndarray, color: list, radius: int):
+def blush_mask(src: np.ndarray, points: np.ndarray, color: Tuple[int, int, int], radius: int):
     """
     Given a src image, points of the cheeks, desired color and radius
     Returns a colored mask that can be added to the src
