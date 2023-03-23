@@ -11,7 +11,7 @@ face_conn = [10, 338, 297, 332, 284, 251, 389, 264, 447, 376, 433, 288, 367, 397
 cheeks = [425, 205]
 
 
-def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, color: Tuple[int, int, int], show_landmarks: bool = False):
+def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, color: Tuple[int, int, int], gamma: int, show_landmarks: bool = False):
     ret_landmarks = detect_landmarks(src, is_stream)
     height, width, _ = src.shape
     feature_landmarks = None
@@ -25,7 +25,7 @@ def apply_makeup(src: np.ndarray, is_stream: bool, feature: str, color: Tuple[in
         output = cv2.addWeighted(src, 1.0, mask, 1, 1.0)
     else:  # Defaults to blush for any other thing
         skin_mask = mask_skin(src)
-        output = np.where(src * skin_mask >= 1, gamma_correction(src, 1.75), src)
+        output = np.where(src * skin_mask >= 1, gamma_correction(src, gamma), src)
     if show_landmarks and feature_landmarks is not None:
         plot_landmarks(src, feature_landmarks, True)
     return output

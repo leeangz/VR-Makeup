@@ -1,14 +1,11 @@
-from flask import Flask, request, jsonify, Response, send_file
+from flask import Flask, request
 from flask_cors import CORS
-import numpy as np
-from io import BytesIO
-from PIL import Image
-from utils import apply_makeup, apply_feature
+from utils import apply_makeup
 import cv2
 import enum
 import uuid
 import time
-from typing import Tuple
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -52,20 +49,20 @@ def try_makeup():
     elif blush=='salmon' : color=(000,000,204)
     elif blush=='none' : color=()
     
-     # 색상별 BGR값 부여 -> lips
-    if foundation=='none': color=(0,0,255)
-    elif foundation=='dark': color=(0,127,255)
-    elif foundation=='warmbeige': color=(102,000,153)
-    elif foundation=='coolpink' : color=(130,0,75)
-    elif foundation=='lightbeige': color=(255,0,255)
+     # 색상별 BGR값 부여 -> foundation
+    if foundation=='none': gamma=1
+    elif foundation=='dark': gamma=4
+    elif foundation=='warmbeige': gamma=2
+    elif foundation=='coolpink' : gamma=0.5
+    elif foundation=='lightbeige': gamma=0.8
     
     # 파일경로 불러오기
     image = cv2.imread(filePath, cv2.IMREAD_UNCHANGED)
     
     # 각 부위 별 색상 넣기
-    output_lip = apply_makeup(image, False, 'lips', color, False)
-    output_blush = apply_makeup(image, False, 'blush', color, False)
-    output_foundation = apply_makeup(image, False, 'foundation', color, False)
+    output_lip = apply_makeup(image, False, 'lips', color, 1, False)
+    output_blush = apply_makeup(image, False, 'blush', color, 1,False)
+    output_foundation = apply_makeup(image, False, 'foundation',(0,0,0), gamma, False)
     
     # Blend the three output images together
     alpha1 = 0.5 
@@ -80,8 +77,16 @@ def try_makeup():
     output_filepath = f"C:/dev64/thehyundai/color/img/{output_filename}"
     cv2.imwrite(output_filepath, blend)
     
-    # jpg로 return
-    return output_filename
+    #java로 선택된 값 전송
+    response_data = {
+    'lips': lips,
+    'blush': blush,
+    'foundation': foundation,
+    'output_filename': output_filename
+    }
+    
+    # json 더미 return
+    return json.dumps(response_data)
 
 if __name__ == '__main__':
     app.run()
